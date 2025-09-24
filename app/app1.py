@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 # Mandatory model and config
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
 load_dotenv(dotenv_path=dotenv_path)
-
 langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
 openai_api_key = os.getenv("OPENAI_API_KEY")
 if langchain_api_key:
@@ -65,38 +64,35 @@ def summarize_context(ctx: NoteContext) -> dict:
 
 # ---- LangChain prompt ----
 SYSTEM_MSG = """You are a senior ABAP expert. Output ONLY JSON as response.
-In llm_prompt: For every provided payload item,
-write a bullet point that:
-- Displays the exact offending code
-- Explains the necessary action to fix the offset error using the provided .mb_txn_usage text (if available).
-- Bullet points should contain  the fix (no numbering or referencing like "snippet[1]": display the code inline).
-- Do NOT include any "snippet" content in the output (use it only as background to refine the bullets).
-- No Bullet point should be exact duplicate.
+You are an ABAP upgrade advisor. Output ONLY valid JSON as response.
+- For every provided .mb_txn_usage[] with a non-empty "suggested_statement":
+  - Write a bullet point using ONLY the "suggested_statement" field as the corrective action.
+  - If "snippet" is non-empty, insert it (as ABAP code/text) before/after the suggested_statement where it fits.
+  - Do not reference or require code outside "snippet".
+  - Omit mb_txn_usage without a suggested_statement.
+- Cover ALL mb_txn_usage with suggested_statement.
+Return JSON (and nothing else) with:
+{{
+  "assessment": "<summary of  issues>",
+  "llm_prompt": "<a single string, with each bullet prefixed by '-', separated by newlines>"
+}}
 """.strip()
 
 USER_TEMPLATE = """
 You are evaluating a system context related to SAP OSS Note 1804812 (MB* obsolescence). We provide:
 - system context
-- list of detected MB* transactions used in code (with offending code snippets when available)
-
-Your job:
-1) Provide a concise **assessment**:
-   - Indicate the risk: MB* is obsolete, warning may appear daily in non-production.
-   - Impact: user confusion, technical debt, eventual failure in future releases.
-   - Recommend: use MIGO instead.
-
-2) Provide an actionable **LLM remediation prompt**:
-   - Do NOT include any "snippet" content in the output (use it only as background to refine the bullets).
-   - No Bullet point should be exact duplicate.
-   - Show the suggested replacement (from suggested_statement).   
-   - Ask to replace MB01, MB02, MB03, MB04, MB05, ΜΒΘΑ, MB11,
-    MB1A, MB18, MBC, MB31, MBNL, MBRL, MBSF,
-    MBSL, MBST, MBSU with MIGO equivalents, keeping behavior correct.
-
-Return ONLY strict JSON:
+Instructions:
+1. Write a summary ("assessment").
+2. For every finding containing a non-empty suggested_statement, add a bullet in "llm_prompt":
+    - Use the "suggested_statement" field as the action text.
+    - Do NOT include any "snippet" content in the output (use it only as background to refine the bullets).
+    - No Bullet point should be exact duplicate.
+    - Each Bullet point Should clearly explains , each action Item.
+    - Skip any findings without a suggested_statement.
+Return valid JSON:
 {{
-  "assessment": "<concise note 1804812 impact>",
-  "llm_prompt": "<bullets with fix>"
+  "assessment": "<concise impact paragraph>",
+  "llm_prompt": "<a single string, with each bullet prefixed by '-', separated by newlines>"
 }}
 
 Unit metadata:

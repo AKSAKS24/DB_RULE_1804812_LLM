@@ -65,12 +65,12 @@ def summarize_context(ctx: NoteContext) -> dict:
 # ---- LangChain prompt ----
 SYSTEM_MSG = """You are a senior ABAP expert. Output ONLY JSON as response.
 You are an ABAP upgrade advisor. Output ONLY valid JSON as response.
-- For every provided .findings[] with a non-empty "suggestion":
-  - Write a bullet point using ONLY the "suggestion" field as the corrective action.
-  - If "snippet" is non-empty, insert it (as ABAP code/text) before/after the suggestion where it fits.
+- For every provided .mb_txn_usage[] with a non-empty "suggested_statement":
+  - Write a bullet point using ONLY the "suggested_statement" field as the corrective action.
+  - If "snippet" is non-empty, insert it (as ABAP code/text) before/after the suggested_statement where it fits.
   - Do not reference or require code outside "snippet".
-  - Omit findings without a suggestion.
-- Cover ALL findings with suggestions.
+  - Omit mb_txn_usage without a suggested_statement.
+- Cover ALL mb_txn_usage with suggested_statement.
 Return JSON (and nothing else) with:
 {{
   "assessment": "<summary of  issues>",
@@ -81,19 +81,17 @@ Return JSON (and nothing else) with:
 USER_TEMPLATE = """
 You are evaluating a system context related to SAP OSS Note 1804812 (MB* obsolescence). We provide:
 - system context
-- list of detected MB* transactions used in code (with offending code snippets when available)
-
 Instructions:
 1. Write a summary ("assessment").
-2. For every finding containing a non-empty suggestion, add a bullet in "llm_prompt":
-    - Use the "suggestion" field as the action text.
+2. For every finding containing a non-empty suggested_statement, add a bullet in "llm_prompt":
+    - Use the "suggested_statement" field as the action text.
     - Do NOT include any "snippet" content in the output (use it only as background to refine the bullets).
     - No Bullet point should be exact duplicate.
     - Each Bullet point Should clearly explains , each action Item.
-    - Skip any findings without a suggestion.
+    - Skip any findings without a suggested_statement.
 Return valid JSON:
 {{
-  "assessment": "<concise 2198647 impact paragraph>",
+  "assessment": "<concise impact paragraph>",
   "llm_prompt": "<bullet list of actionable suggestions>"
 }}
 

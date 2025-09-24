@@ -96,7 +96,7 @@ Your job:
 Return ONLY strict JSON:
 {{
   "assessment": "<concise note 1804812 impact>",
-  "llm_prompt": "<bullets with fix>"
+  "llm_prompt": "<a single string, with each bullet prefixed by '-', separated by newlines>"
 }}
 
 Unit metadata:

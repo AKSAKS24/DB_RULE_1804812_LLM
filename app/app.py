@@ -74,7 +74,7 @@ You are an ABAP upgrade advisor. Output ONLY valid JSON as response.
 Return JSON (and nothing else) with:
 {{
   "assessment": "<summary of  issues>",
-  "llm_prompt": "<bulleted list with all actions as described above>"
+  "llm_prompt": "<a single string, with each bullet prefixed by '-', separated by newlines>"
 }}
 """.strip()
 
@@ -92,7 +92,7 @@ Instructions:
 Return valid JSON:
 {{
   "assessment": "<concise impact paragraph>",
-  "llm_prompt": "<bullet list of actionable suggestions>"
+  "llm_prompt": "<a single string, with each bullet prefixed by '-', separated by newlines>"
 }}
 
 Unit metadata:
